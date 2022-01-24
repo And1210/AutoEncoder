@@ -7,6 +7,7 @@ import time
 from utils.visualizer import Visualizer
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import OrderedDict
 
 """Performs training of a specified model.
 
@@ -53,6 +54,7 @@ def train(config_file, export=True):
 
         train_iterations = len(train_dataset)
         train_batch_size = configuration['train_dataset_params']['loader_params']['batch_size']
+        patch_size = configuration['model_params']['patch_size']
 
         total_loss = 0
 
@@ -114,6 +116,10 @@ def train(config_file, export=True):
         print('Saving latest model at the end of epoch {0}'.format(epoch))
         model.save_networks("last")
         model.save_optimizers("last")
+
+        data = OrderedDict()
+        data['Loss'] = total_loss
+        visualizer.plot_current_epoch_loss(epoch, data)
 
         print('End of epoch {0} / {1} \t Time Taken: {2} sec'.format(epoch, num_epochs, time.time() - epoch_start_time))
         print('Total Loss: {:.4f}'.format(total_loss))

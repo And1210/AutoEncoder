@@ -95,6 +95,34 @@ class Visualizer():
             self.create_visdom_connections()
 
 
+    def plot_current_epoch_loss(self, epoch, losses):
+        """Display the current losses on visdom display: dictionary of error labels and values.
+
+        Input params:
+            epoch: Current epoch.
+            counter_ratio: Progress (percentage) in the current epoch, between 0 to 1.
+            losses: Training losses stored in the format of (name, float) pairs.
+        """
+        if not hasattr(self, 'loss_plot_epoch_data'):
+            self.loss_plot_epoch_data = {'X': [], 'Y': [], 'legend': list(losses.keys())}
+        self.loss_plot_epoch_data['X'].append(epoch)
+        self.loss_plot_epoch_data['Y'].append([losses[k] for k in self.loss_plot_epoch_data['legend']])
+        x = np.squeeze(np.stack([np.array(self.loss_plot_epoch_data['X'])] * len(self.loss_plot_epoch_data['legend']), 1), axis=1)
+        y = np.squeeze(np.array(self.loss_plot_epoch_data['Y']), axis=1)
+        try:
+            self.vis.line(
+                X=x,
+                Y=y,
+                opts={
+                    'title': self.name + ' loss over epoch',
+                    'legend': self.loss_plot_epoch_data['legend'],
+                    'xlabel': 'epoch',
+                    'ylabel': 'loss'},
+                win=self.display_id+2)
+        except ConnectionError:
+            self.create_visdom_connections()
+
+
     def plot_roc_curve(self, fpr, tpr, thresholds):
         """Display the ROC curve.
 
