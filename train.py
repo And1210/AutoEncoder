@@ -8,6 +8,8 @@ from utils.visualizer import Visualizer
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+import torch
+import matplotlib.pyplot as plt
 
 """Performs training of a specified model.
 
@@ -55,6 +57,7 @@ def train(config_file, export=True):
         train_iterations = len(train_dataset)
         train_batch_size = configuration['train_dataset_params']['loader_params']['batch_size']
         patch_size = configuration['model_params']['patch_size']
+        input_size = configuration['train_dataset_params']['input_size']
 
         total_loss = 0
 
@@ -63,15 +66,19 @@ def train(config_file, export=True):
         for i, data in enumerate(train_dataset):  # inner loop within one epoch
             visualizer.reset()
 
-            model.set_input(data)         # unpack data from dataset and apply preprocessing
+            for ip in range(int(float(input_size[0])/patch_size)):
+                for jp in range(int(float(input_size[1])/patch_size)):
+                    cur_data = [data[0][:, :, ip*patch_size:(ip+1)*patch_size, jp*patch_size:(jp+1)*patch_size],
+                                data[1][:, :, ip*patch_size:(ip+1)*patch_size, jp*patch_size:(jp+1)*patch_size]]
+                    model.set_input(cur_data)         # unpack data from dataset and apply preprocessing
 
-            output = model.forward()
-            model.compute_loss()
+                    output = model.forward()
+                    model.compute_loss()
 
-            total_loss += model.loss_total.item()
+                    total_loss += model.loss_total.item()
 
-            if i % configuration['model_update_freq'] == 0:
-                model.optimize_parameters()   # calculate loss functions, get gradients, update network weights
+                    if i % configuration['model_update_freq'] == 0:
+                        model.optimize_parameters()   # calculate loss functions, get gradients, update network weights
 
             if i % configuration['printout_freq'] == 0:
                 losses = model.get_current_losses()
@@ -85,11 +92,24 @@ def train(config_file, export=True):
         for i, data in enumerate(val_dataset):
             if (i > 0):
                 break
-            model.set_input(data)  # unpack data from data loader
-            model.test()           # run inference
+            output = torch.empty((3, input_size[0], input_size[1]))
+            # fig, axs = plt.subplots(2*int(float(input_size[0])/patch_size), int(float(input_size[1])/patch_size))
+            for ip in range(int(float(input_size[0])/patch_size)):
+                for jp in range(int(float(input_size[1])/patch_size)):
+                    cur_data = [data[0][:, :, ip*patch_size:(ip+1)*patch_size, jp*patch_size:(jp+1)*patch_size],
+                                data[1][:, :, ip*patch_size:(ip+1)*patch_size, jp*patch_size:(jp+1)*patch_size]]
+                    model.set_input(cur_data)         # unpack data from dataset and apply preprocessing
+                    model.test()
+                    output[:, ip*patch_size:(ip+1)*patch_size, jp*patch_size:(jp+1)*patch_size] = model.output[0]
+
+                    # axs[ip, jp].imshow(cur_data[0][0].permute(1, 2, 0).cpu().detach().numpy())
+                    # axs[ip+int(float(input_size[0])/patch_size), jp].imshow(model.output[0].permute(1, 2, 0).cpu().detach().numpy())
+
+            # plt.waitforbuttonpress()
+            # plt.close()
 
             img = data[0][0].permute(1, 2, 0).cpu().detach().numpy()
-            out_img = model.output[0].permute(1, 2, 0).cpu().detach().numpy()
+            out_img = output.permute(1, 2, 0).cpu().detach().numpy()
             # img = np.zeros((512, 512, 3))
             # out_img = np.zeros((512, 512, 3))
             # for i in range(512):

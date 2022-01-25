@@ -92,7 +92,7 @@ class AutoEncoder(nn.Module):
     def __init__(self, encoded_dim=256):
         super(AutoEncoder, self).__init__()
 
-        hidden_dims = [128, 256, 512]
+        hidden_dims = [16, 32, 64, 128, 256, 512]
 
         self.encoder = Encoder(hidden_dims, 3, encoded_dim)
         self.decoder = Decoder(hidden_dims, encoded_dim)
@@ -112,6 +112,7 @@ class AutoEncodermodel(BaseModel):
         #Initialize model defined above
         self.model = AutoEncoder(configuration['encoded_dim'])
         self.model.cuda()
+        # self.models = [AutoEncoder(configuration['encoded_dim']).cuda() for i in range(4)]
 
         #Define loss function
         self.criterion_loss = nn.MSELoss().cuda()
@@ -122,9 +123,14 @@ class AutoEncodermodel(BaseModel):
             betas=(configuration['momentum'], 0.999),
             weight_decay=configuration['weight_decay']
         )
+        # self.optimizers = [torch.optim.Adam(self.models[i].parameters(),
+        #                     lr=configuration['lr'],
+        #                     betas=(configuration['momentum'], 0.999),
+        #                     weight_decay=configuration['weight_decay']) for i in range(4)]
 
         #Need to include these arrays with the optimizers and names of loss functions and models
         #Will be used by other functions for saving/loading
+        # self.optimizers = [self.optimizers[i] for i in range(4)]
         self.optimizers = [self.optimizer]
         self.loss_names = ['total']
         self.network_names = ['model']
@@ -137,6 +143,7 @@ class AutoEncodermodel(BaseModel):
     def forward(self):
         x = self.input
         self.output = self.model.forward(x)
+        # self.output = self.models[ip*2+jp].forward(x)
         return self.output
 
     #Computes the loss with the specified name (in this case 'total')

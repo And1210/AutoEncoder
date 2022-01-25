@@ -80,7 +80,7 @@ class BaseModel(ABC):
                 for _ in range(last_checkpoint):
                     s.step()
 
-        self.print_networks()
+        # self.print_networks()
 
     def train(self):
         """Make models train mode during test time."""
@@ -88,6 +88,8 @@ class BaseModel(ABC):
             if isinstance(name, str):
                 net = getattr(self, name)
                 net.train()
+                # for n in net:
+                #     n.train()
 
     def eval(self):
         """Make models eval mode during test time."""
