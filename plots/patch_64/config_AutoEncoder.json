@@ -4,7 +4,7 @@
         "dataset_path": "/drive/datasets/CARLA2CityScapes/images/train/CARLA",
         "stage": "train",
         "loader_params": {
-            "batch_size": 4,
+            "batch_size": 32,
             "shuffle": true,
             "num_workers": 1,
             "pin_memory": true
@@ -16,7 +16,7 @@
         "dataset_path": "/drive/datasets/CARLA2CityScapes/images/train/CARLA",
         "stage": "val",
         "loader_params": {
-            "batch_size": 4,
+            "batch_size": 32,
             "shuffle": false,
             "num_workers": 1,
             "pin_memory": true
@@ -34,8 +34,8 @@
         "patch_size": 64,
         "export_path": "",
         "checkpoint_path": "./checkpoints",
-        "load_checkpoint": -1,
-        "scheduler_epoch": -1,
+        "load_checkpoint": "last",
+        "scheduler_epoch": 38,
         "lr_policy": "step",
         "lr_decay_iters": 10,
         "epoch_list": [0, 43]
@@ -46,6 +46,6 @@
     "visualization_params_validation": {
         "name": "AutoEncoder"
     },
-    "printout_freq": 10,
+    "printout_freq": 5,
     "model_update_freq": 1
 }
