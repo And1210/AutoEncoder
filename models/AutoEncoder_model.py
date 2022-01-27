@@ -92,7 +92,7 @@ class AutoEncoder(nn.Module):
     def __init__(self, encoded_dim=256):
         super(AutoEncoder, self).__init__()
 
-        hidden_dims = [32, 64, 128, 256, 512]
+        hidden_dims = [256, 512]
 
         self.encoder = Encoder(hidden_dims, 3, encoded_dim)
         self.decoder = Decoder(hidden_dims, encoded_dim)
